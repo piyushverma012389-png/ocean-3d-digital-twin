@@ -716,6 +716,101 @@ body, html, #root {
   opacity: 0.85;
 }
 
+/* Live Backend Connection Status Badge */
+.backend-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.backend-status-badge.connected {
+  background: rgba(0, 255, 178, 0.12);
+  border: 1px solid rgba(0, 255, 178, 0.4);
+  color: var(--accent-emerald);
+}
+
+.backend-status-badge.offline {
+  background: rgba(255, 170, 0, 0.12);
+  border: 1px solid rgba(255, 170, 0, 0.4);
+  color: #ffaa00;
+}
+
+.backend-status-badge .status-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.backend-status-badge.connected .status-indicator-dot {
+  background: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald);
+  animation: pulse-green 2s infinite ease-in-out;
+}
+
+.backend-status-badge.offline .status-indicator-dot {
+  background: #ffaa00;
+  box-shadow: 0 0 6px #ffaa00;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Informative Offline Warning Banner */
+.offline-banner {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 170, 0, 0.5);
+  border-radius: 8px;
+  padding: 8px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 170, 0, 0.2);
+  max-width: 90%;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+.offline-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e2e8f0;
+  font-size: 11.5px;
+}
+
+.offline-banner-icon {
+  font-size: 14px;
+}
+
+.offline-banner-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 14px;
+  margin-left: 8px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.offline-banner-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Model vs Observation Action Button */
 .btn-compare-action {
   display: flex;

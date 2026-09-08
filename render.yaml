@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ocean-3d-digital-twin-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: CORS_ORIGINS
+        value: "https://piyushverma012389-png.github.io"

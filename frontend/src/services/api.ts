@@ -10,8 +10,29 @@ import {
   DataProvenance
 } from '../types/ocean';
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || 
-  (typeof window !== 'undefined' && window.location.port === '5173' ? '/api' : 'http://127.0.0.1:8000/api');
+function resolveApiBase(): string | null {
+  const envUrl = (import.meta as any).env?.VITE_API_BASE;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim().length > 0) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+    if (isLocalhost) {
+      if (window.location.port === '5173') {
+        return '/api';
+      }
+      return 'http://127.0.0.1:8000/api';
+    }
+  }
+
+  // On remote domains (e.g. GitHub Pages) with no configured VITE_API_BASE,
+  // do NOT attempt to query localhost (avoids browser Mixed Content and connection failure).
+  return null;
+}
+
+export const API_BASE = resolveApiBase();
 
 interface FetchOptions {
   signal?: AbortSignal;
@@ -19,9 +40,17 @@ interface FetchOptions {
 }
 
 /**
- * Robust fetcher with error handling and fallback safety
+ * Robust fetcher with error handling, environment awareness, and fallback safety
  */
 async function fetchJson<T>(url: string, fallbackGenerator?: () => T, options?: FetchOptions): Promise<T> {
+  // If no backend is configured or url is malformed due to null API_BASE
+  if (!API_BASE || url.startsWith('null/')) {
+    if (options?.disallowFallback || !fallbackGenerator) {
+      throw new Error('Public backend API is not configured or offline.');
+    }
+    return fallbackGenerator();
+  }
+
   try {
     const res = await fetch(url, { signal: options?.signal || AbortSignal.timeout(6000) });
     if (!res.ok) {
@@ -307,7 +336,20 @@ export const oceanApi = {
       all_authentic_data_available: true,
       datasets: {}
     }));
-  }
+  },
+
+  checkHealth: async (): Promise<boolean> => {
+    if (!API_BASE) return false;
+    try {
+      const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3500) });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  isBackendConfigured: (): boolean => API_BASE !== null,
+  getApiBase: (): string | null => API_BASE
 };
 
 /**

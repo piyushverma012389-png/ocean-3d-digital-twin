@@ -80,6 +80,7 @@ export const App: React.FC = () => {
 
   // Phase 4: SIH Presentation Mode state
   const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
+  const [isOfflineBannerDismissed, setIsOfflineBannerDismissed] = useState<boolean>(false);
 
   // Phase 4: Stale-state request sequencing references
   const sliceRequestIdRef = useRef<number>(0);
@@ -144,19 +145,20 @@ export const App: React.FC = () => {
   useEffect(() => {
     async function initData() {
       try {
-        const [metaData, bathyData, floatsData, glidersData, provData] = await Promise.all([
+        const [metaData, bathyData, floatsData, glidersData, provData, isConnected] = await Promise.all([
           oceanApi.getMetadata(),
           oceanApi.getBathymetry(),
           oceanApi.getArgoFloats(),
           oceanApi.getGliders(),
-          oceanApi.getProvenance().catch(() => null)
+          oceanApi.getProvenance().catch(() => null),
+          oceanApi.checkHealth()
         ]);
         setMeta(metaData);
         setBathymetryGrid(bathyData);
         setArgoFloats(floatsData);
         setGliders(glidersData);
         if (provData) setProvenance(provData);
-        setIsBackendConnected(true);
+        setIsBackendConnected(isConnected);
 
         // Preload SIH demo baseline comparison (Argo 2902088 Cycle 217 vs HYCOM 20 Nov 2018)
         loadComparison('argo-2902088', 'temperature', 217, 2);
@@ -329,6 +331,25 @@ export const App: React.FC = () => {
         isPresentationMode={isPresentationMode}
         onTogglePresentationMode={() => setIsPresentationMode(prev => !prev)}
       />
+
+      {/* Offline Simulation Informative Banner */}
+      {!isBackendConnected && !isOfflineBannerDismissed && (
+        <div className="offline-banner" role="alert">
+          <div className="offline-banner-content">
+            <span className="offline-banner-icon">ℹ️</span>
+            <span className="offline-banner-text">
+              <strong>Offline Mode:</strong> FastAPI backend is currently unreachable. Displaying cached simulation. Authentic NetCDF datasets (HYCOM 3D, GEBCO 2020, Argo 2902088) require a live connected backend.
+            </span>
+            <button
+              className="offline-banner-close"
+              onClick={() => setIsOfflineBannerDismissed(true)}
+              title="Dismiss warning"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 1-Click Scientific Workflow Stepper (Phase 3D Requirement 7) */}
       <WorkflowGuide

@@ -144,7 +144,7 @@ Frontend dashboard will be available at: `http://localhost:5173`
 
 ## Running Tests
 
-### Backend Automated Test Suite (69 Tests across 9 Suites)
+### Backend Automated Test Suite (77 Tests across 10 Suites)
 ```bash
 python backend/tests/run_all_tests.py
 ```
@@ -163,6 +163,7 @@ The test runner executes:
 7. `test_phase3c_comparison.py` (10 tests) — Collocation metrics (RMSE, MAE, Bias) and error profile validation
 8. `test_phase3d_storytelling.py` (8 tests) — State summary calculations, time synchronization, and vector math
 9. `test_phase4_hardening.py` (8 tests) — Health diagnostics, 404 safety on invalid cycles, and terminology audit
+10. `test_provenance_status.py` (8 tests) — Authentic NetCDF provenance verification and runtime status consistency
 
 ### Frontend Production Build
 ```bash
@@ -170,6 +171,58 @@ cd frontend
 npm run build
 ```
 Verifies TypeScript compilation and production asset bundling with 0 errors.
+
+---
+
+## Deployment Architecture & Cross-Device Accessibility
+
+### 1. Overview
+The platform consists of two decoupled components:
+- **Frontend**: Static React + Three.js SPA hosted on [GitHub Pages](https://piyushverma012389-png.github.io/ocean-3d-digital-twin/).
+- **Backend**: FastAPI computational engine with scientific NetCDF ingestion (`xarray`, `netCDF4`, `numpy`).
+
+### 2. The `localhost` Limitation & Mixed Content
+- When accessing the GitHub Pages site from an external laptop, tablet, or smartphone, browser security models prevent the page from querying `127.0.0.1:8000`:
+  1. `localhost` / `127.0.0.1` refers to the *visitor's* machine, where no FastAPI server is running.
+  2. Modern web browsers block **Mixed Active Content** (querying insecure `http://` API endpoints from a secure `https://` origin).
+- When opened without a live cloud backend, the application displays `🔴 BACKEND OFFLINE` and provides a high-fidelity cached offline simulation with honest provenance notices.
+
+### 3. Authentic Dataset Portability
+All 4 authentic NetCDF datasets total only **~11.5 MB**:
+- `hycom_indian_ocean.nc` (9.22 MB)
+- `hycom_ssh_indian_ocean.nc` (66 KB)
+- `gebco_2020_indian_ocean.nc` (44 KB)
+- `2902088_prof.nc` (2.0 MB)
+
+Because these files are tracked directly in Git under `data/raw/`, any cloud container or server cloning this repository immediately has full access to authentic oceanographic datasets without needing external S3 buckets or database configuration.
+
+### 4. Deploying the Live Backend to Cloud Hosting
+
+#### Option A: Render (Recommended Free Tier)
+1. Log in to [Render](https://render.com) and create a **New Web Service**.
+2. Connect this repository (`piyushverma012389-png/ocean-3d-digital-twin`).
+3. Configure the service:
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r backend/requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT`
+   - **Environment Variable**: `CORS_ORIGINS = https://piyushverma012389-png.github.io`
+4. Deploy the service. Render will assign an HTTPS endpoint (e.g., `https://ocean-3d-digital-twin-api.onrender.com`).
+
+#### Option B: Docker Container (Railway, Fly.io, Google Cloud Run)
+Use the included multi-platform [Dockerfile](Dockerfile):
+```bash
+docker build -t ocean-3d-backend .
+docker run -p 8000:8000 -e CORS_ORIGINS="https://piyushverma012389-png.github.io" ocean-3d-backend
+```
+
+### 5. Connecting GitHub Pages to your Live Cloud Backend
+Once your cloud backend is deployed:
+1. Go to your GitHub repository: **Settings** → **Secrets and variables** → **Actions** → **Variables**.
+2. Click **New repository variable**:
+   - **Name**: `VITE_API_BASE`
+   - **Value**: `https://your-backend-service.onrender.com/api` (replace with your actual URL).
+3. Re-run the **Deploy to GitHub Pages** GitHub Action workflow (or push any commit to `main`).
+4. The GitHub Pages deployment will now query your live backend globally from any laptop, tablet, or phone, displaying `🟢 BACKEND LIVE` and authentic data.
 
 ---
 

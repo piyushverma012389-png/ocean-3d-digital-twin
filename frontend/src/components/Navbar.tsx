@@ -17,6 +17,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
+  isBackendConnected,
   onResetCamera,
   onOpenComparison,
   provenance,
@@ -42,6 +43,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="brand-subtitle">
           3D Numerical Model + In-Situ Observation Explorer
         </div>
+      </div>
+
+      {/* Live Backend Connection Status */}
+      <div
+        className={`backend-status-badge ${isBackendConnected ? 'connected' : 'offline'}`}
+        title={
+          isBackendConnected
+            ? "FastAPI Ocean Backend is LIVE. Authentic NetCDF dataset ingestion active."
+            : "FastAPI Backend is currently unreachable. High-fidelity offline simulation mode active."
+        }
+      >
+        <span className="status-indicator-dot" />
+        <span className="status-indicator-text">{isBackendConnected ? 'BACKEND LIVE' : 'BACKEND OFFLINE'}</span>
       </div>
 
       {/* Live Data Sources Indicator */}

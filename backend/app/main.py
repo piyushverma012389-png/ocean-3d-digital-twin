@@ -18,16 +18,29 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Enable CORS for frontend development
+import os
+
+# Configure production-ready CORS origins
+allowed_origins = [
+    "https://piyushverma012389-png.github.io",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+]
+
+# Support additional custom production origins via environment variable
+extra_origins = os.environ.get("CORS_ORIGINS", "")
+if extra_origins:
+    for o in extra_origins.split(","):
+        cleaned = o.strip()
+        if cleaned and cleaned not in allowed_origins:
+            allowed_origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://localhost:4173",
-        "*"
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
