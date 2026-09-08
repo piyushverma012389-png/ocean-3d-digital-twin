@@ -11,6 +11,7 @@ interface OceanStateSummaryProps {
   selectedFloat?: ArgoFloat | null;
   selectedCycle?: number;
   isLoading?: boolean;
+  currentTimeStep?: number;
 }
 
 export const OceanStateSummary: React.FC<OceanStateSummaryProps> = ({
@@ -19,7 +20,8 @@ export const OceanStateSummary: React.FC<OceanStateSummaryProps> = ({
   currentDepth,
   meta,
   onOpenProvenance,
-  isLoading = false
+  isLoading = false,
+  currentTimeStep = 2
 }) => {
   // Variable friendly name and unit
   const varConfig = useMemo(() => {
@@ -54,21 +56,29 @@ export const OceanStateSummary: React.FC<OceanStateSummaryProps> = ({
     return count > 0 ? (sum / count).toFixed(2) : null;
   }, [sliceData]);
 
-  // Model date/time formatting
+  // Model date/time formatting strictly derived from selected HYCOM snapshot
   const modelDateStr = useMemo(() => {
-    if (!sliceData?.timestamp) return 'N/A';
+    let ts = sliceData?.timestamp;
+    if (!ts && meta?.time_steps && currentTimeStep !== undefined) {
+      ts = meta.time_steps[currentTimeStep]?.timestamp;
+    }
+    if (!ts && currentTimeStep !== undefined) {
+      const dates = ['2018-11-18T00:00:00Z', '2018-11-19T00:00:00Z', '2018-11-20T00:00:00Z'];
+      ts = dates[Math.min(Math.max(0, currentTimeStep), 2)];
+    }
+    if (!ts) return 'N/A';
     try {
-      const d = new Date(sliceData.timestamp);
-      if (isNaN(d.getTime())) return sliceData.timestamp;
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return ts;
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const day = d.getUTCDate();
       const month = months[d.getUTCMonth()];
       const year = d.getUTCFullYear();
       return `${day} ${month} ${year} • 00:00 UTC`;
     } catch {
-      return sliceData.timestamp;
+      return ts;
     }
-  }, [sliceData?.timestamp]);
+  }, [sliceData?.timestamp, meta?.time_steps, currentTimeStep]);
 
   // Geographic domain bounds from metadata
   const domainStr = useMemo(() => {

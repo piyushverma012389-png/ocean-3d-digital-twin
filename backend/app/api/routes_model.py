@@ -82,11 +82,13 @@ def get_data_provenance():
     hycom_auth = model_service.is_using_real_data()
     ssh_auth = model_service.is_using_real_ssh()
     gebco_auth = bathymetry_service.is_using_real_data()
-    argo_auth = argo_netcdf_loader.has_argo_data()
+    argo_auth = bool(argo_netcdf_loader and argo_netcdf_loader.has_argo_data())
 
     return {
         "hycom": {
             "is_authentic": hycom_auth and ssh_auth,
+            "is_authentic_3d": hycom_auth,
+            "is_authentic_ssh": ssh_auth,
             "name": "NOAA/NRL HYCOM+NCODA",
             "product": "GLBu0.08 / expt 91.2",
             "source": "NOAA CoastWatch ERDDAP (nrlHycomGLBu008e912D_LonPM180 & nrlHycomGLBu008e912S_LonPM180)",
@@ -94,6 +96,15 @@ def get_data_provenance():
             "depth_coverage": "0m to 5000m (39 depth levels)",
             "temporal_coverage": "2018-11-18 to 2018-11-20 (daily mean fields)",
             "variables": ["water_temp (Temperature)", "salinity (Salinity)", "water_u / water_v (Currents)", "surf_el (SSH)"]
+        },
+        "hycom_ssh": {
+            "is_authentic": ssh_auth,
+            "name": "NOAA/NRL HYCOM Sea Surface Height",
+            "product": "GLBu0.08 / expt 91.2 (surf_el)",
+            "source": "NOAA CoastWatch ERDDAP (nrlHycomGLBu008e912S_LonPM180)",
+            "spatial_coverage": "30.0°E – 115.0°E, 25.0°S – 30.0°N (sampled ~0.08°)",
+            "temporal_coverage": "2018-11-18 to 2018-11-20",
+            "variables": ["surf_el (SSH)"]
         },
         "gebco": {
             "is_authentic": gebco_auth,

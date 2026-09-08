@@ -5,9 +5,10 @@ import { X, Database, CheckCircle2, AlertTriangle, Globe, Waves, Anchor, Info } 
 interface ProvenanceModalProps {
   provenance: DataProvenance | null;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
-export const ProvenanceModal: React.FC<ProvenanceModalProps> = ({ provenance, onClose }) => {
+export const ProvenanceModal: React.FC<ProvenanceModalProps> = ({ provenance, onClose, onRefresh }) => {
   if (!provenance) return null;
 
   return (
@@ -88,6 +89,12 @@ export const ProvenanceModal: React.FC<ProvenanceModalProps> = ({ provenance, on
                 <div className="prov-row">
                   <span className="prov-key">Variables:</span>
                   <span className="prov-val">{provenance.hycom.variables.join(', ')}</span>
+                </div>
+                <div className="prov-row">
+                  <span className="prov-key">HYCOM SSH (surf_el):</span>
+                  <span className="prov-val" style={{ display: 'flex', alignItems: 'center', gap: '4px', color: (provenance.hycom.is_authentic_ssh ?? provenance.hycom.is_authentic) ? 'var(--accent-emerald)' : '#ffaa00' }}>
+                    {(provenance.hycom.is_authentic_ssh ?? provenance.hycom.is_authentic) ? <><CheckCircle2 size={10} /> AUTHENTIC NETCDF</> : <><AlertTriangle size={10} /> SYNTHETIC FALLBACK</>}
+                  </span>
                 </div>
               </div>
             </div>

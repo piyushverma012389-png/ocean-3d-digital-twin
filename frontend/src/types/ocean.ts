@@ -164,11 +164,22 @@ export interface CursorCoordinate {
 export interface DataProvenance {
   hycom: {
     is_authentic: boolean;
+    is_authentic_3d?: boolean;
+    is_authentic_ssh?: boolean;
     name: string;
     product: string;
     source: string;
     spatial_coverage: string;
     depth_coverage: string;
+    temporal_coverage: string;
+    variables: string[];
+  };
+  hycom_ssh?: {
+    is_authentic: boolean;
+    name: string;
+    product: string;
+    source: string;
+    spatial_coverage: string;
     temporal_coverage: string;
     variables: string[];
   };

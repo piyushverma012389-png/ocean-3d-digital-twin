@@ -121,6 +121,25 @@ export const App: React.FC = () => {
     }
   }, [currentTimeStep, selectedCycle]);
 
+  // Fresh provenance fetcher to guarantee live runtime status is never stale
+  const refreshProvenance = useCallback(async () => {
+    try {
+      const provData = await oceanApi.getProvenance();
+      if (provData) {
+        setProvenance(provData);
+      }
+    } catch (e) {
+      console.warn('Failed to refresh provenance status:', e);
+    }
+  }, []);
+
+  // Re-fetch provenance dynamically whenever Provenance Modal is opened
+  useEffect(() => {
+    if (isProvenanceOpen) {
+      refreshProvenance();
+    }
+  }, [isProvenanceOpen, refreshProvenance]);
+
   // Initial load
   useEffect(() => {
     async function initData() {
@@ -374,6 +393,7 @@ export const App: React.FC = () => {
           meta={meta}
           onOpenProvenance={() => setIsProvenanceOpen(true)}
           isLoading={isSliceLoading}
+          currentTimeStep={currentTimeStep}
         />
 
         {/* Phase 3D Requirement 6: Argo Observation Story Card */}
@@ -466,6 +486,7 @@ export const App: React.FC = () => {
         <ProvenanceModal
           provenance={provenance}
           onClose={() => setIsProvenanceOpen(false)}
+          onRefresh={refreshProvenance}
         />
       )}
 

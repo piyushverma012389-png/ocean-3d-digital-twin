@@ -25,13 +25,11 @@ class Settings:
     # Reflects standard WOD/Argo/ROMS depth discretization
     DEPTH_LEVELS: List[int] = [0, 10, 20, 50, 100, 200, 500, 1000, 1500, 2000, 3000, 4000]
     
-    # Temporal simulation steps (hours / day snapshots)
+    # Temporal simulation steps (hours / day snapshots) matching authentic HYCOM daily fields
     TIME_STEPS: List[Dict[str, Any]] = [
-        {"index": 0, "timestamp": "2026-09-01T00:00:00Z", "label": "T0: Monsoonal Onset"},
-        {"index": 1, "timestamp": "2026-09-02T00:00:00Z", "label": "T+24h: Peak Somali Jet"},
-        {"index": 2, "timestamp": "2026-09-03T00:00:00Z", "label": "T+48h: BoB Gyre Spin-up"},
-        {"index": 3, "timestamp": "2026-09-04T00:00:00Z", "label": "T+72h: Equatorial Wave"},
-        {"index": 4, "timestamp": "2026-09-05T00:00:00Z", "label": "T+96h: Upwelling Surge"},
+        {"index": 0, "timestamp": "2018-11-18T00:00:00Z", "label": "18 Nov 2018"},
+        {"index": 1, "timestamp": "2018-11-19T00:00:00Z", "label": "19 Nov 2018"},
+        {"index": 2, "timestamp": "2018-11-20T00:00:00Z", "label": "20 Nov 2018"},
     ]
     
     # Physical variables dictionary

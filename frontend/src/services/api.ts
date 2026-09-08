@@ -10,7 +10,8 @@ import {
   DataProvenance
 } from '../types/ocean';
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = (import.meta as any).env?.VITE_API_BASE || 
+  (typeof window !== 'undefined' && window.location.port === '5173' ? '/api' : 'http://127.0.0.1:8000/api');
 
 interface FetchOptions {
   signal?: AbortSignal;
@@ -347,11 +348,14 @@ function generateFallbackSlice(variable: OceanVariable, depth: number, timeStep:
     values.push(row);
   }
 
+  const timeTimestamps = ['2018-11-18T00:00:00Z', '2018-11-19T00:00:00Z', '2018-11-20T00:00:00Z'];
+  const ts = timeTimestamps[Math.min(Math.max(0, timeStep), 2)];
+
   return {
     variable,
     depth,
     time_step: timeStep,
-    timestamp: '2026-09-01T00:00:00Z',
+    timestamp: ts,
     units: variable === 'temperature' ? '°C' : variable === 'salinity' ? 'PSU' : 'm/s',
     min_val: 2.0,
     max_val: 31.0,

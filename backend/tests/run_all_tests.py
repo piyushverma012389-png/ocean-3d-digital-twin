@@ -10,7 +10,8 @@ Executes all regression, loader, service, and scientific analysis test suites:
 - test_phase3c_comparison.py (10 tests)
 - test_phase3d_storytelling.py (8 tests)
 - test_phase4_hardening.py (8 tests)
-Total: 69 tests.
+- test_provenance_status.py (8 tests)
+Total: 77 tests.
 """
 import sys
 import os
@@ -26,7 +27,8 @@ TEST_FILES = [
     "test_multi_cycle_comparison.py",
     "test_phase3c_comparison.py",
     "test_phase3d_storytelling.py",
-    "test_phase4_hardening.py"
+    "test_phase4_hardening.py",
+    "test_provenance_status.py"
 ]
 
 def main():

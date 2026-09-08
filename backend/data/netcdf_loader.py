@@ -462,7 +462,13 @@ class OceanModelNetCDFLoader:
         if not nc_files:
             return None
         for f in nc_files:
-            if "hycom" in os.path.basename(f).lower():
+            basename = os.path.basename(f).lower()
+            if "ssh" not in basename and "surf_el" not in basename and ("hycom" in basename or "model" in basename or "glbu" in basename):
+                return f
+        # Fallback: any non-ssh .nc file
+        for f in nc_files:
+            basename = os.path.basename(f).lower()
+            if "ssh" not in basename and "surf_el" not in basename:
                 return f
         return nc_files[0]
 
@@ -861,6 +867,7 @@ class SSHNetCDFLoader:
         self._raw_models_dir = self._resolve_models_dir(raw_models_dir)
         self._cached_meta: Optional[Dict[str, Any]] = None
         self._cached_data: Optional[Dict[str, np.ndarray]] = None
+        self._cached_slices: Dict[int, Dict[str, Any]] = {}
         self._is_loaded: bool = False
 
     def _resolve_models_dir(self, custom_dir: Optional[str]) -> str:
@@ -884,6 +891,7 @@ class SSHNetCDFLoader:
     def clear_cache(self):
         self._cached_meta = None
         self._cached_data = None
+        self._cached_slices.clear()
         self._is_loaded = False
 
     def get_dataset_filepath(self) -> Optional[str]:
@@ -1018,6 +1026,9 @@ class SSHNetCDFLoader:
         meta = self._cached_meta
         time_steps = meta["time_steps"]
         clamped_time = max(0, min(time_step, len(time_steps) - 1))
+        if clamped_time in self._cached_slices:
+            return self._cached_slices[clamped_time]
+
         ts_info = time_steps[clamped_time]
 
         lons = meta["lons"]
@@ -1049,7 +1060,7 @@ class SSHNetCDFLoader:
                     row.append(val_f)
             values_2d.append(row)
 
-        return {
+        slice_obj = {
             "variable": "ssh",
             "depth": 0,
             "time_step": clamped_time,
@@ -1062,6 +1073,8 @@ class SSHNetCDFLoader:
             "values": values_2d,
             "vectors": []
         }
+        self._cached_slices[clamped_time] = slice_obj
+        return slice_obj
 
     def sample_point(self, lon: float, lat: float, time_step: int = 0) -> Optional[float]:
         """Samples authentic SSH at a specific geographic point and time step."""
